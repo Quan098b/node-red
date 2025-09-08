@@ -11,8 +11,8 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Copy flows to staging via scp
+      - name: Simulate scp deploy
         run: |
-          scp -P "${{ secrets.SSH_PORT }}" -o StrictHostKeyChecking=no \
-              flows.json settings.js \
-              "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DEST_DIR }}"
+          echo "scp -P '${{ secrets.SSH_PORT }}' flows.json settings.js \
+          ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DEST_DIR }}"
+          echo "✅ Fake deploy success (demo only)"
