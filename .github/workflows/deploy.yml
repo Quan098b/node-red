@@ -2,19 +2,30 @@ name: Deploy Node-RED flows to staging
 on:
   push:
     branches: ["main"]
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
+
       - name: Copy flows to staging via scp
         run: |
-          scp -P "${{ secrets.SSH_PORT }}" -o StrictHostKeyChecking=no \
+          scp -i ~/.ssh/id_ed25519 -P "${{ secrets.SSH_PORT }}" \
+              -o StrictHostKeyChecking=yes \
               flows.json settings.js \
               "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DEST_DIR }}"
+
       - name: Restart Node-RED (optional)
         run: |
-          ssh -p "${{ secrets.SSH_PORT }}" \
+          ssh -i ~/.ssh/id_ed25519 -p "${{ secrets.SSH_PORT }}" \
           "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
           "powershell -Command \"Get-Process node-red -ErrorAction SilentlyContinue | Stop-Process -Force; Start-Process node-red -WindowStyle Hidden\""
