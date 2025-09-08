@@ -1,28 +1,20 @@
 name: Deploy Node-RED flows to staging
-
 on:
   push:
-    branches: ["main"]   # chạy mỗi khi push lên main
-
+    branches: ["main"]
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
-      # 1) Lấy mã nguồn (flows.json + settings.js) từ repo
       - name: Checkout
         uses: actions/checkout@v4
-
-      # 2) Copy 2 file sang máy staging bằng scp
       - name: Copy flows to staging via scp
         run: |
           scp -P "${{ secrets.SSH_PORT }}" -o StrictHostKeyChecking=no \
               flows.json settings.js \
               "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DEST_DIR }}"
-
-      # 3) (Tuỳ chọn) Restart Node-RED để nạp flow mới
       - name: Restart Node-RED (optional)
         run: |
           ssh -p "${{ secrets.SSH_PORT }}" \
           "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
-          "pm2 restart node-red || sudo systemctl restart nodered || powershell -Command \"Get-Process node-red -ErrorAction SilentlyContinue | Stop-Process -Force; Start-Process node-red -WindowStyle Hidden\""
+          "powershell -Command \"Get-Process node-red -ErrorAction SilentlyContinue | Stop-Process -Force; Start-Process node-red -WindowStyle Hidden\""
