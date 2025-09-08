@@ -1,4 +1,5 @@
 name: Deploy Node-RED flows to staging
+
 on:
   push:
     branches: ["main"]
@@ -7,25 +8,14 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout source
         uses: actions/checkout@v4
 
       - name: Setup SSH
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Copy flows to staging via scp
+      - name: Copy flows.json and settings.js
         run: |
-          scp -i ~/.ssh/id_ed25519 -P "${{ secrets.SSH_PORT }}" \
-              -o StrictHostKeyChecking=yes \
-              flows.json settings.js \
-              "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DEST_DIR }}"
-
-      - name: Restart Node-RED (optional)
-        run: |
-          ssh -i ~/.ssh/id_ed25519 -p "${{ secrets.SSH_PORT }}" \
-          "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
-          "powershell -Command \"Get-Process node-red -ErrorAction SilentlyContinue | Stop-Process -Force; Start-Process node-red -WindowStyle Hidden\""
+          scp -P ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no flows.json settings.js ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DEST_DIR }}
