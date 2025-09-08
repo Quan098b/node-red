@@ -1,1 +1,35 @@
-[]
+[
+  { "id": "tab1", "type": "tab", "label": "Demo", "disabled": false, "info": "" },
+  {
+    "id": "inj1",
+    "type": "inject",
+    "z": "tab1",
+    "name": "Ping",
+    "props": [{"p":"payload"},{"p":"topic"}],
+    "repeat": "",
+    "crontab": "",
+    "once": true,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "Hello from GitHub",
+    "payloadType": "str",
+    "x": 180,
+    "y": 140,
+    "wires": [["dbg1"]}
+  ],
+  {
+    "id": "dbg1",
+    "type": "debug",
+    "z": "tab1",
+    "name": "See payload",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "x": 420,
+    "y": 140,
+    "wires": []
+  }
+]
