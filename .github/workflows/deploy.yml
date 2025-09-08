@@ -1,0 +1,18 @@
+name: Deploy Node-RED flows to staging
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Copy flows to staging via scp
+        run: |
+          scp -P "${{ secrets.SSH_PORT }}" -o StrictHostKeyChecking=no \
+              flows.json settings.js \
+              "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DEST_DIR }}"
